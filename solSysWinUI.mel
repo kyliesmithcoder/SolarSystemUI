@@ -1,0 +1,707 @@
+// GA306 - SCRIPTING FOR 3D TOOLS
+// FINAL PROJECT - SOLSYSWINUI.MEL
+// KYLIE SMITH
+////////////////////////////////////////////////////////////
+
+
+global proc solSysWinUI() {
+	
+	// CHECK IF WINDOW EXISTS, DELETE IF IT DOES
+	if (`window -exists solSysWindow`) {
+		deleteUI solSysWindow;
+	}
+	
+	// CREATE WINDOW
+	window -title "Create Solar System" -sizeable false solSysWindow;
+	window -edit -widthHeight 450 532 solSysWindow;
+		
+		// CREATE TABS
+		string $solSysTabs = `tabLayout solSysTabs`;
+		
+			// CREATE COLUMN LAYOUT FOR SUN TAB
+			string $sun = `columnLayout sunLayout`;
+					
+				// CREATE FRAME LAYOUT FOR CUSTOM SUN
+				string $sunCustom = `frameLayout -label "Customize" -collapsable true -width 443 sunCusLayout`;
+					
+					// CREATE OPTIONS
+					textFieldGrp -label "Name" sunName;
+					
+					floatFieldGrp -numberOfFields 3 -label "Position" 
+						-value1 0.0 -value2 0.0 -value3 0.0 
+						sunPosition;
+					
+					floatSliderGrp -label "Diameter" -field true 
+						-minValue 0.1 -maxValue 100.0 -value 1.0 
+						sunDiameter;
+					
+					separator separatorSun01;
+					
+					string $objName = `shadingNode -asShader lambert -name "colorSliderNode"`;
+					select -cl;
+					attrColorSliderGrp -label "Sun Color" -enable true -attribute ($objName+".color") sunColor;
+					
+					floatSliderGrp -label "Brightness" -field true -enable true
+						-minValue 0.0 -maxValue 1.0 -value 1.0
+						sunBrightness;
+					
+					separator separatorSun02;
+					
+					floatFieldGrp -numberOfFields 2 -label "Axial Tilt" 
+						-value1 0.0 -value2 0.0
+						sunTilt;
+					
+					radioButtonGrp -numberOfRadioButtons 3 -enable true
+						-label "Rotation Direction" 
+						-labelArray3 "None" "Left" "Right"
+						sunRotDirection;
+					
+					floatSliderGrp -label "Rotation Speed" -field true 
+						-minValue 0.0 -maxValue 100.0 -value 0.0 -enable true
+						sunRotSpeed;
+			
+					// CREATE ROW LAYOUT FOR BUTTONS
+					string $sunButtons = `rowLayout -numberOfColumns 1 sunButtonLayout`;	
+						
+						// CREATE CUSTOM SUN CREATE BUTTON	
+						button -label "Create" -width 438 -command "createCustomSun();" createCustomSunButton;
+						
+					// SET WITHIN CUSTOMIZE LAYOUT
+					setParent ..;
+					
+				// SET WITHIN SUN TAB
+				setParent ..;
+				
+			// SET WITHIN TAB LAYOUT		
+			setParent ..;			
+			
+			// CREATE COLUMN LAYOUT FOR PLANET TAB
+			string $planet = `columnLayout planetLayout`;
+				
+				// CREATE FRAME LAYOUT FOR CUSTOM PLANET
+				string $planetCustom = `frameLayout -label "Customize" -collapsable true -width 443 planetCustomLayout`;
+					
+					// CREATE OPTIONS
+					textFieldGrp -label "Name" planetName;
+					
+					floatFieldGrp -numberOfFields 3 -label "Position" 
+						-value1 0.0 -value2 0.0 -value3 0.0 
+						planetPosition;
+					
+					floatSliderGrp -label "Diameter" -field true 
+						-minValue 0.1 -maxValue 50 -value 1 
+						planetDiameter;
+					
+					separator separatorPlanet01;
+					
+					string $planetObjName = `shadingNode -asShader lambert -name "planetColorSliderNode"`;
+					select -cl;
+					attrColorSliderGrp -label "Planet Color" -enable true -attribute ($planetObjName+".color") planetColor;
+					
+						// SET UP TWO LINE RADIO BUTTON GROUP
+						columnLayout ;
+						string $planetTerrainGrp01 = `radioButtonGrp -numberOfRadioButtons 2
+							-label "Terrain" -labelArray2 "Flat" "Sloping" -enable true planetTerrain01`;
+						string $planetTerrainGrp02 = `radioButtonGrp -numberOfRadioButtons 2 -shareCollection $planetTerrainGrp01
+							-label "" -labelArray2 "Mountainous" "Cratered" -enable true planetTerrain02`;
+						
+						// SET WITHIN CUSTOM PLANET FRAME LAYOUT
+						setParent ..;
+						
+					separator separatorPlanet02;
+					
+					floatFieldGrp -numberOfFields 2 -label "Axial Tilt" 
+						-value1 0 -value2 0
+						planetTilt;
+					
+					radioButtonGrp -numberOfRadioButtons 3
+						-label "Rotation Direction" 
+						-labelArray3 "None" "Left" "Right"
+						planetRotDirection;
+					
+					floatSliderGrp -label "Rotation Speed" -field true 
+						-minValue 0 -maxValue 100 -value 0
+						planetRotSpeed;
+					
+					separator separatorPlanet03;
+					
+					intSliderGrp -label "Rings" -field true
+						-minValue 0 -maxValue 2 -value 0
+						planetRings;					
+					
+					string $ringObjName = `shadingNode -asShader lambert -name "ringColorSliderNode"`;
+					select -cl;
+					attrColorSliderGrp -label "Ring Color" -enable true -attribute ($ringObjName+".color") planetRingColor;
+					
+					floatFieldGrp -numberOfFields 2 -label "Ring Tilt" 
+						-value1 0.0 -value2 0.0 -enable true
+						planetRingTilt;
+					
+					// CREATE ROW LAYOUT FOR PLANET BUTTONS
+					string $planetButtons = `rowLayout -numberOfColumns 1 planetButtonLayout`;	
+						
+						// CREATE CUSTOM PLANET CREATE BUTTON	
+						button -label "Create" -width 438 -command "createCustomPlanet();" createCustomPlanetButton;
+						
+					// SET WITHIN ROW LAYOUT		
+					setParent ..;
+					
+				// SET WITHIN TAB LAYOUT		
+				setParent ..;
+				
+				// CREATE FRAME LAYOUT FOR PLANET ORBIT
+				string $planetOrbit = `frameLayout -label "Orbit" -collapsable true -width 443 planetOrbitLayout`;
+					
+					// CREATE OPTIONS
+					textFieldGrp -label "Name of Planet" planetToOrbit;
+					textFieldGrp -label "Name of Sun to Orbit" sunItWillOrbit;
+				
+					// SET PLANET ORBIT
+					button -label "Set Orbit" -width 20 -command "setPlanetOrbit();" setPlanetOrbitButton;
+					
+				// SET WITHIN TAB LAYOUT		
+				setParent ..;
+				
+			// SET WITHIN TAB LAYOUT
+			setParent ..;
+			
+			// CREATE COLUMN LAYOUT FOR MOON TAB
+			string $moon = `columnLayout moonLayout`;
+				
+				// CREATE FRAME LAYOUT FOR CUSTOM MOON
+				string $moonCustom = `frameLayout -label "Customize" -collapsable true -width 443 moonCustomLayout`;
+					
+					textFieldGrp -label "Name" moonName;
+					
+					floatFieldGrp -numberOfFields 3 -label "Position" 
+						-value1 0.0 -value2 0.0 -value3 0.0 
+						moonPosition;
+						
+					floatSliderGrp -label "Diameter" -field true 
+						-minValue 0.1 -maxValue 25 -value 1 
+						moonDiameter;
+						
+					separator separatorMoon01;
+					
+					string $moonObjName = `shadingNode -asShader lambert -name "moonColorSliderNode"`;
+					select -cl;
+					attrColorSliderGrp -label "Moon Color" -enable true -attribute ($moonObjName+".color") moonColor;
+						
+						// SET UP TWO LINE RADIO BUTTON GROUP
+						columnLayout;
+						string $moonTerrainGrp01 = `radioButtonGrp -numberOfRadioButtons 2
+							-label "Terrain" -labelArray2 "Flat" "Sloping" moonTerrain01`;
+						string $moonTerrainGrp01 = `radioButtonGrp -numberOfRadioButtons 2 -shareCollection $moonTerrainGrp01
+							-label "" -labelArray2 "Mountainous" "Cratered" moonTerrain02`;
+						
+						// SET WITHIN CUSTOM MOON FRAME LAYOUT
+						setParent ..;
+						
+					separator separatorMoon02;
+					
+					floatFieldGrp -numberOfFields 2 -label "Axial Tilt" 
+						-value1 0 -value2 0
+						moonTilt;
+						
+					radioButtonGrp -numberOfRadioButtons 3 -enable true
+						-label "Rotation Direction" 
+						-labelArray3 "None" "Left" "Right"
+						moonRotDirection;
+						
+					floatSliderGrp -label "Rotation Speed" -field true 
+						-minValue 0 -maxValue 100 -value 0 -enable true
+						moonRotSpeed;
+						
+					// CREATE ROW LAYOUT FOR MOON BUTTONS
+					string $moonButtons = `rowLayout -numberOfColumns 1 moonButtonLayout`;
+						
+						// CREATE CUSTOM MOON CREATE BUTTON	
+						button -label "Create" -width 438 -command "createCustomMoon();" createCustomMoonButton;
+					
+					// SET WITHIN ROW LAYOUT
+					setParent ..;
+					
+				// SET WITHIN TAB LAYOUT		
+				setParent ..;
+				
+				// CREATE FRAME LAYOUT FOR MOON ORBIT
+				string $moonOrbit = `frameLayout -label "Orbit" -collapsable true -width 443 moonOrbitLayout`;
+					
+					// CREATE OPTIONS
+					textFieldGrp -label "Name of Moon" moonToOrbit;
+					textFieldGrp -label "Name of Planet to Orbit" planetItWillOrbit;
+					// SET MOON ORBIT
+					button -label "Set Orbit" -width 20 -command "setMoonOrbit();" setMoonOrbitButton;
+					
+				// SET WITHIN TAB LAYOUT		
+				setParent ..;
+				
+			// SET WITHIN TAB LAYOUT
+			setParent ..;
+			
+			// EDIT TAB LABELS
+			tabLayout -edit 
+				-tabLabel $sun "Sun"
+				-tabLabel $planet "Planet"
+				-tabLabel $moon "Moon"
+				solSysTabs;
+	
+	showWindow solSysWindow;
+	
+}
+
+global proc createCustomSun() {
+
+	// GET SELECTED INPUT
+	string $sName = `textFieldGrp -query -text sunName`;
+	float $sPositionX = `floatFieldGrp -query -value1 sunPosition`;
+	float $sPositionY = `floatFieldGrp -query -value2 sunPosition`;
+	float $sPositionZ = `floatFieldGrp -query -value3 sunPosition`;
+	float $sDiameter = `floatSliderGrp -query -value sunDiameter`;
+	float $sunColorRGB[] = `attrColorSliderGrp -query -rgbValue sunColor`;
+	float $sBrightness = `floatSliderGrp -query -value sunBrightness`;
+	float $sTiltX = `floatFieldGrp -query -value1 sunTilt`;
+	float $sTiltZ = `floatFieldGrp -query -value2 sunTilt`;
+	float $sDirection = `radioButtonGrp -query -select sunRotDirection`;
+	float $sSpeed = `floatSliderGrp -query -value sunRotSpeed`;
+	
+	// CREATE SPHERE TO BE EDITED BY INPUTS
+	string $sBigBang[] = `polySphere -sx 30 -sy 30`;
+	displaySmoothness -du 0 -dv 0 -pw 4 -ps 1;	
+
+	// ADJUST SUN SPHERE POSITION BASED ON SUNPOSITION INPUTS
+	setAttr	($sBigBang[0]+".tx") $sPositionX;
+	setAttr	($sBigBang[0]+".ty") $sPositionY;
+	setAttr	($sBigBang[0]+".tz") $sPositionZ;
+	
+	// ADJUST SUN SPHERE RADIUS BASED ON SUNDIAMETER INPUT
+	setAttr ($sBigBang[0]+".sx") $sDiameter;
+	setAttr ($sBigBang[0]+".sy") $sDiameter;
+	setAttr ($sBigBang[0]+".sz") $sDiameter;
+	
+	// ADJUST SUN SPHERE COLOR BASED ON SUNCOLOR INPUT
+	string $sunShader = `shadingNode -asShader blinn -name "customSunShader"`;
+	string $sunShaderSG = `sets -renderable true -noSurfaceShader true -empty -name "customSunSG"`;
+	connectAttr -force ($sunShader+".outColor") ($sunShaderSG+".surfaceShader");
+	setAttr ($sunShader+".color") $sunColorRGB[0] $sunColorRGB[1] $sunColorRGB[2];
+	select -r $sBigBang;
+	hyperShade -assign $sunShader;
+	
+	// ADJUST SUN SPHERE BRIGHTNESS BASED ON SUNBRIGHTNESS INPUT
+	setAttr ($sunShader+".glowIntensity") $sBrightness;		
+	
+	// ADJUST SUN SPHERE TILT BASED ON SUNTILT INPUT
+	setAttr ($sBigBang[0]+".rx") $sTiltX;
+	setAttr ($sBigBang[0]+".rz") $sTiltZ;				
+	
+	animCurveEditor -edit -displayInfinities true graphEditor1GraphEd;
+	
+	// ADJUST SUN SPHERE ROTATION BASED ON ROTATION DIRECTION AND SPEED
+	if ($sDirection == 2) {
+		currentTime -edit 1;
+		setKeyframe -breakdown 0 ($sBigBang[0]+".ry");
+		currentTime -edit 24;
+		$sSpeed = $sSpeed * -1;
+		setAttr ($sBigBang[0]+".rotateY") $sSpeed;
+		setKeyframe -breakdown 0 ($sBigBang[0]+".ry");
+		
+		selectKey -add -k -t 1 -t 24 ($sBigBang[0]+".ry");	
+		doSetInfinity "-pri cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -pri cycleRelative;
+		doSetInfinity "-poi cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -poi cycleRelative;
+	}
+
+	else if ($sDirection == 3) {
+		currentTime -edit 1;
+		setKeyframe -breakdown 0 ($sBigBang[0]+".ry");
+		currentTime -edit 24;
+		setAttr ($sBigBang[0]+".rotateY") $sSpeed;
+		setKeyframe -breakdown 0 ($sBigBang[0]+".ry");
+	
+		selectKey -add -k -t 1 -t 24 ($sBigBang[0]+".ry");	
+		doSetInfinity "-pri cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -pri cycleRelative;
+		doSetInfinity "-poi cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -poi cycleRelative;
+	}
+
+	else { }
+		
+	// ADJUST SUN SPHERE NAME BASED ON SUNNAME INPUT
+	/*** DO LAST SO DOESN'T HAVE ISSUES FINDING SBIGBANG[0] */
+	rename $sBigBang[0] $sName;
+	
+}
+
+global proc createCustomPlanet() {
+
+	// GET SELECTED INPUT
+	string $pName = `textFieldGrp -query -text planetName`;
+	float $pPositionX = `floatFieldGrp -query -value1 planetPosition`;
+	float $pPositionY = `floatFieldGrp -query -value2 planetPosition`;
+	float $pPositionZ = `floatFieldGrp -query -value3 planetPosition`;
+	float $pDiameter = `floatSliderGrp -query -value planetDiameter`;
+	float $planetColorRGB[] = `attrColorSliderGrp -query -rgbValue planetColor`;
+	float $pTerrain01 = `radioButtonGrp -query -select planetTerrain01`;
+	float $pTerrain02 = `radioButtonGrp -query -select planetTerrain02`;
+	float $pTiltX = `floatFieldGrp -query -value1 planetTilt`;
+	float $pTiltZ = `floatFieldGrp -query -value2 planetTilt`;
+	float $pDirection = `radioButtonGrp -query -select planetRotDirection`;
+	float $pSpeed = `floatSliderGrp -query -value planetRotSpeed`;
+	int $pRings = `intSliderGrp -query -value planetRings`;
+	float $pRingTiltX = `floatFieldGrp -query -value1 planetRingTilt`;
+	float $pRingTiltZ = `floatFieldGrp -query -value2 planetRingTilt`;
+	float $pRingColorRGB[] = `attrColorSliderGrp -query -rgbValue planetRingColor`;
+
+	// CREATE SPHERE TO BE EDITED BY INPUTS
+	string $pBigBang[] = `polySphere -sx 50 -sy 50`;
+	displaySmoothness -du 0 -dv 0 -pw 4 -ps 1;
+
+	// ADJUST PLANET SPHERE POSITION BASED ON PLANETPOSITION INPUTS
+	setAttr	($pBigBang[0]+".tx") $pPositionX;
+	setAttr	($pBigBang[0]+".ty") $pPositionY;
+	setAttr	($pBigBang[0]+".tz") $pPositionZ;
+
+	// ADJUST PLANET SPHERE RADIUS BASED ON PLANETDIAMETER INPUT
+	setAttr ($pBigBang[0]+".sx") $pDiameter;
+	setAttr ($pBigBang[0]+".sy") $pDiameter;
+	setAttr ($pBigBang[0]+".sz") $pDiameter;
+
+	// ADJUST PLANET SPHERE COLOR BASED ON PLANETCOLOR INPUT
+	string $planetShader = `shadingNode -asShader blinn -name "customPlanetShader"`;
+	string $planetShaderSG = `sets -renderable true -noSurfaceShader true -empty -name "customPlanetSG"`;
+	connectAttr -force ($planetShader+".outColor") ($planetShaderSG+".surfaceShader");
+	setAttr ($planetShader+".color") $planetColorRGB[0] $planetColorRGB[1] $planetColorRGB[2];
+	select -r $pBigBang;
+	hyperShade -assign $planetShader;
+	
+	// ADJUST PLANET TERRAIN BASED ON PLANETTERRAIN INPUT
+	if ($pTerrain01 == 2) {		
+		string $verts[];
+		select ($pBigBang[0]+".vtx[0:2451]");
+		string $selected[] = `ls -sl -flatten`;
+		$verts = $selected;
+		int $size = size($verts);
+		
+		for($i = 0;$i<$size;$i++){
+        	float $randomX = rand(0, 0.02);
+        	float $randomY = rand(0, 0.02);
+        	float $randomZ = rand(0, 0.02);
+        	select -r $verts[$i];
+        		move -r $randomX 0 0; 
+	        	move -r 0 $randomY 0;
+	        	move -r 0 0 $randomZ;
+    	}
+    	select $pBigBang[0];
+    	displaySmoothness -divisionsU 3 -divisionsV 3 -pointsWire 16 -pointsShaded 4 -polygonObject 3;
+	}
+	
+	else if ($pTerrain02 == 1) {
+		string $verts[];
+		select ($pBigBang[0]+".vtx[0:2451]");
+		string $selected[] = `ls -sl -flatten`;
+		$verts = $selected;
+		int $size = size($verts);
+		
+		for($i = 0;$i<$size;$i++){
+        	float $randomX = rand(0, 0.1);
+        	float $randomY = rand(0, 0.1);
+        	float $randomZ = rand(0, 0.1);
+        	select -r $verts[$i];
+        		move -r $randomX 0 0; 
+	        	move -r 0 $randomY 0;
+	        	move -r 0 0 $randomZ;
+    	}
+    	select $pBigBang[0];
+    	displaySmoothness -divisionsU 3 -divisionsV 3 -pointsWire 16 -pointsShaded 4 -polygonObject 3;
+	}
+	
+	else if ($pTerrain02 == 2) {
+		string $verts[];
+		select ($pBigBang[0]+".vtx[0:2451]");
+		string $selected[] = `ls -sl -flatten`;
+		$verts = $selected;
+		int $size = size($verts);
+		
+		for($i = 0;$i<$size;$i++){
+        	float $randomX = rand(-0.2, 0);
+        	float $randomY = rand(-0.2, 0);
+        	float $randomZ = rand(-0.2, 0);
+        	select -r $verts[$i];
+        		move -r $randomX 0 0; 
+	        	move -r 0 $randomY 0;
+	        	move -r 0 0 $randomZ;
+    	}
+    	select $pBigBang[0];
+    	displaySmoothness -divisionsU 3 -divisionsV 3 -pointsWire 16 -pointsShaded 4 -polygonObject 3;
+	}
+	
+	else { }	
+
+	// ADJUST PLANET SPHERE TILT BASED ON PLANETTILT INPUT
+	setAttr ($pBigBang[0]+".rx") $pTiltX;
+	setAttr ($pBigBang[0]+".rz") $pTiltZ;				
+
+	animCurveEditor -edit -displayInfinities true graphEditor1GraphEd;
+
+	// ADJUST PLANET SPHERE ROTATION BASED ON ROTATION DIRECTION AND SPEED
+	if ($pDirection == 2) {
+		currentTime -edit 1;
+		setKeyframe -breakdown 0 ($pBigBang[0]+".ry");
+		currentTime -edit 24;
+		$pSpeed = $pSpeed * -1;
+		setAttr ($pBigBang[0]+".rotateY") $pSpeed;
+		setKeyframe -breakdown 0 ($pBigBang[0]+".ry");
+
+		selectKey -add -k -t 1 -t 24 ($pBigBang[0]+".ry");	
+		doSetInfinity "-pri cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -pri cycleRelative;
+		doSetInfinity "-poi cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -poi cycleRelative;
+	}
+
+	else if ($pDirection == 3) {
+		currentTime -edit 1;
+		setKeyframe -breakdown 0 ($pBigBang[0]+".ry");
+		currentTime -edit 24;
+		setAttr ($pBigBang[0]+".rotateY") $pSpeed;
+		setKeyframe -breakdown 0 ($pBigBang[0]+".ry");
+
+		selectKey -add -k -t 1 -t 24 ($pBigBang[0]+".ry");	
+		doSetInfinity "-pri cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -pri cycleRelative;
+		doSetInfinity "-poi cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -poi cycleRelative;
+	}
+
+	else { }
+	
+	// CREATE TORUS TO BE EDITED BY INPUTS
+	if ($pRings == 1) {
+		string $rBigBang[] = `polyTorus -sx 50 -sy 50`;
+		setAttr ($rBigBang[0]+".tx") $pPositionX;
+		setAttr ($rBigBang[0]+".ty") $pPositionY;
+		setAttr ($rBigBang[0]+".tz") $pPositionZ;
+		setAttr ($rBigBang[0]+".rx") $pRingTiltX;
+		setAttr ($rBigBang[0]+".rz") $pRingTiltZ;
+		setAttr ($rBigBang[0]+".sy") 0.075;
+		$pDiameter = $pDiameter * 1.4;
+		setAttr ($rBigBang[1]+".r") $pDiameter;
+		setAttr ($rBigBang[1]+".sr") 0.1;
+		parent $rBigBang[0] $pBigBang[0];
+		
+		// ADJUST RING COLOR BASED ON RINGCOLOR INPUT
+		string $ringShader = `shadingNode -asShader blinn -name "customRingShader"`;
+		string $ringShaderSG = `sets -renderable true -noSurfaceShader true -empty -name "customRingSG"`;
+		connectAttr -force ($ringShader+".outColor") ($ringShaderSG+".surfaceShader");
+		setAttr ($ringShader+".color") $pRingColorRGB[0] $pRingColorRGB[1] $pRingColorRGB[2];
+		select -r $rBigBang;
+		hyperShade -assign $ringShader;
+	}
+
+	else if ($pRings == 2) {
+		string $rBigBang01[] = `polyTorus -sx 50 -sy 50`;
+		setAttr ($rBigBang01[0]+".tx") $pPositionX;
+		setAttr ($rBigBang01[0]+".ty") $pPositionY;
+		setAttr ($rBigBang01[0]+".tz") $pPositionZ;
+		setAttr ($rBigBang01[0]+".rx") $pRingTiltX;
+		setAttr ($rBigBang01[0]+".rz") $pRingTiltZ;
+		setAttr ($rBigBang01[0]+".sy") 0.075;
+		$pDiameter = $pDiameter * 1.4;
+		setAttr ($rBigBang01[1]+".r") $pDiameter;
+		setAttr ($rBigBang01[1]+".sr") 0.1;
+	
+		string $rBigBang02[] = `polyTorus -sx 50 -sy 50`;
+		setAttr ($rBigBang02[0]+".tx") $pPositionX;
+		setAttr ($rBigBang02[0]+".ty") $pPositionY;
+		setAttr ($rBigBang02[0]+".tz") $pPositionZ;
+		setAttr ($rBigBang02[0]+".rx") $pRingTiltX;
+		setAttr ($rBigBang02[0]+".rz") $pRingTiltZ;
+		setAttr ($rBigBang02[0]+".sy") 0.075;
+		$pDiameter = $pDiameter * 1.45;
+		setAttr ($rBigBang02[1]+".r") $pDiameter;
+		setAttr ($rBigBang02[1]+".sr") 0.1;
+
+		parent $rBigBang01[0] $pBigBang[0];
+		parent $rBigBang02[0] $pBigBang[0];
+		
+		// ADJUST RING COLOR BASED ON RINGCOLOR INPUT
+		string $ringShader = `shadingNode -asShader blinn -name "customRingShader"`;
+		string $ringShaderSG = `sets -renderable true -noSurfaceShader true -empty -name "customRingSG"`;
+		connectAttr -force ($ringShader+".outColor") ($ringShaderSG+".surfaceShader");
+		setAttr ($ringShader+".color") $pRingColorRGB[0] $pRingColorRGB[1] $pRingColorRGB[2];
+		select -r $rBigBang01 $rBigBang02 ;
+		hyperShade -assign $ringShader;
+	}
+
+	// ADJUST PLANET SPHERE NAME BASED ON PLANETNAME INPUT
+	rename $pBigBang[0] $pName;
+	
+}
+
+global proc setPlanetOrbit() {
+
+	// GET SELECTED INPUT
+	string $pPlanetToOrbit = `textFieldGrp -query -text planetToOrbit`;
+	string $pSunToOrbit = `textFieldGrp -query -text sunItWillOrbit`;
+	
+	// SET PLANET TO ORBIT SUN
+	parent  $pPlanetToOrbit $pSunToOrbit;
+		
+}
+
+global proc createCustomMoon() {
+
+	// GET SELECTED INPUT
+	string $mName = `textFieldGrp -query -text moonName`;
+	float $mPositionX = `floatFieldGrp -query -value1 moonPosition`;
+	float $mPositionY = `floatFieldGrp -query -value2 moonPosition`;
+	float $mPositionZ = `floatFieldGrp -query -value3 moonPosition`;
+	float $mDiameter = `floatSliderGrp -query -value moonDiameter`;
+	float $moonColorRGB[] = `attrColorSliderGrp -query -rgbValue moonColor`;
+	float $mTerrain01 = `radioButtonGrp -query -select moonTerrain01`;
+	float $mTerrain02 = `radioButtonGrp -query -select moonTerrain02`;
+	float $mTiltX = `floatFieldGrp -query -value1 moonTilt`;
+	float $mTiltZ = `floatFieldGrp -query -value2 moonTilt`;
+	float $mDirection = `radioButtonGrp -query -select moonRotDirection`;
+	float $mSpeed = `floatSliderGrp -query -value moonRotSpeed`;
+
+	// CREATE SPHERE TO BE EDITED BY INPUTS
+	string $mBigBang[] = `polySphere -sx 50 -sy 50`;
+	displaySmoothness -du 0 -dv 0 -pw 4 -ps 1;
+
+	// ADJUST PLANET SPHERE POSITION BASED ON PLANETPOSITION INPUTS
+	setAttr	($mBigBang[0]+".tx") $mPositionX;
+	setAttr	($mBigBang[0]+".ty") $mPositionY;
+	setAttr	($mBigBang[0]+".tz") $mPositionZ;
+
+	// ADJUST MOON SPHERE RADIUS BASED ON MOONDIAMETER INPUT
+	setAttr ($mBigBang[0]+".sx") $mDiameter;
+	setAttr ($mBigBang[0]+".sy") $mDiameter;
+	setAttr ($mBigBang[0]+".sz") $mDiameter;
+
+	// ADJUST PLANET SPHERE COLOR BASED ON PLANETCOLOR INPUT
+	string $moonShader = `shadingNode -asShader blinn -name "customMoonShader"`;
+	string $moonShaderSG = `sets -renderable true -noSurfaceShader true -empty -name "customMoonSG"`;
+	connectAttr -force ($moonShader+".outColor") ($moonShaderSG+".surfaceShader");
+	setAttr ($moonShader+".color") $moonColorRGB[0] $moonColorRGB[1] $moonColorRGB[2];
+	select -r $mBigBang;
+	hyperShade -assign $moonShader;
+	
+	// ADJUST MOON TERRAIN BASED ON MOONTERRAIN INPUT
+	if ($mTerrain01 == 2) {		
+		string $verts[];
+		select ($mBigBang[0]+".vtx[0:2451]");
+		string $selected[] = `ls -sl -flatten`;
+		$verts = $selected;
+		int $size = size($verts);
+		
+		for($i = 0;$i<$size;$i++){
+        	float $randomX = rand(0, 0.02);
+        	float $randomY = rand(0, 0.02);
+        	float $randomZ = rand(0, 0.02);
+        	select -r $verts[$i];
+        		move -r $randomX 0 0; 
+	        	move -r 0 $randomY 0;
+	        	move -r 0 0 $randomZ;
+    	}
+    	select $mBigBang[0];
+    	displaySmoothness -divisionsU 3 -divisionsV 3 -pointsWire 16 -pointsShaded 4 -polygonObject 3;
+	}
+	
+	else if ($mTerrain02 == 1) {
+		string $verts[];
+		select ($mBigBang[0]+".vtx[0:2451]");
+		string $selected[] = `ls -sl -flatten`;
+		$verts = $selected;
+		int $size = size($verts);
+		
+		for($i = 0;$i<$size;$i++){
+        	float $randomX = rand(0, 0.1);
+        	float $randomY = rand(0, 0.1);
+        	float $randomZ = rand(0, 0.1);
+        	select -r $verts[$i];
+        		move -r $randomX 0 0; 
+	        	move -r 0 $randomY 0;
+	        	move -r 0 0 $randomZ;
+    	}
+    	select $mBigBang[0];
+    	displaySmoothness -divisionsU 3 -divisionsV 3 -pointsWire 16 -pointsShaded 4 -polygonObject 3;
+	}
+	
+	else if ($mTerrain02 == 2) {
+		string $verts[];
+		select ($mBigBang[0]+".vtx[0:2451]");
+		string $selected[] = `ls -sl -flatten`;
+		$verts = $selected;
+		int $size = size($verts);
+		
+		for($i = 0;$i<$size;$i++){
+        	float $randomX = rand(-0.2, 0);
+        	float $randomY = rand(-0.2, 0);
+        	float $randomZ = rand(-0.2, 0);
+        	select -r $verts[$i];
+        		move -r $randomX 0 0; 
+	        	move -r 0 $randomY 0;
+	        	move -r 0 0 $randomZ;
+    	}
+    	select $mBigBang[0];
+    	displaySmoothness -divisionsU 3 -divisionsV 3 -pointsWire 16 -pointsShaded 4 -polygonObject 3;
+	}
+	
+	else { }	
+
+	// ADJUST MOON SPHERE TILT BASED ON MOONTILT INPUT
+	setAttr ($mBigBang[0]+".rx") $mTiltX;
+	setAttr ($mBigBang[0]+".rz") $mTiltZ;			
+
+	animCurveEditor -edit -displayInfinities true graphEditor1GraphEd;
+
+	// ADJUST MOON SPHERE ROTATION BASED ON ROTATION DIRECTION AND SPEED
+	if ($mDirection == 2) {
+		currentTime -edit 1;
+		setKeyframe -breakdown 0 ($mBigBang[0]+".ry");
+		currentTime -edit 24;
+		$mSpeed = $mSpeed * -1;
+		setAttr ($mBigBang[0]+".rotateY") $mSpeed;
+		setKeyframe -breakdown 0 ($mBigBang[0]+".ry");
+
+		selectKey -add -k -t 1 -t 24 ($mBigBang[0]+".ry");	
+		doSetInfinity "-pri cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -pri cycleRelative;
+		doSetInfinity "-poi cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -poi cycleRelative;
+	}
+	
+	else if ($mDirection == 3) {
+		currentTime -edit 1;
+		setKeyframe -breakdown 0 ($mBigBang[0]+".ry");
+		currentTime -edit 24;
+		setAttr ($mBigBang[0]+".rotateY") $mSpeed;
+		setKeyframe -breakdown 0 ($mBigBang[0]+".ry");
+
+		selectKey -add -k -t 1 -t 24 ($mBigBang[0]+".ry");	
+		doSetInfinity "-pri cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -pri cycleRelative;
+		doSetInfinity "-poi cycleRelative" graphEditor1GraphEd "bufferCurve useSmoothness usePin";
+		setInfinity -poi cycleRelative;
+	}
+
+	else { }
+
+	// ADJUST MOON SPHERE NAME BASED ON MOONNAME INPUT
+	rename $mBigBang[0] $mName;
+	
+}
+
+global proc setMoonOrbit() {
+
+	// GET SELECTED INPUT
+	string $mMoonToOrbit = `textFieldGrp -query -text moonToOrbit`;
+	string $mPlanetToOrbit = `textFieldGrp -query -text planetItWillOrbit`;
+	
+	// SET MOON TO ORBIT PLANET
+	parent  $mMoonToOrbit $mPlanetToOrbit;
+		
+}
